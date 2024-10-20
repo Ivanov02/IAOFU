@@ -8,7 +8,7 @@ api_url_get_match_details = "https://europe.api.riotgames.com/lol/match/v5/match
 
 # parameters
 number_to_start_pulling = 0
-number_of_matches_to_pull = 5
+number_of_matches_to_pull = 1
 user_name = "Vonavi"
 user_tag_name = "EUNE"
 api_key = api_key

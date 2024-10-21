@@ -1,33 +1,31 @@
-# IAOFU
+**IAOFU - Data Mining with Riot Games API** <br />
+Acest proiect extrage date din API-ul Riot Games și le salvează pentru analiză. Mai jos sunt pașii necesari pentru a configura și rula proiectul.
 
-1. set the git:
-  check the documentation if needed: https://www.jetbrains.com/help/pycharm/github.html#register-existing-account
+**Setare Git**
+Urmează acest ghid pentru a conecta GitHub cu PyCharm, dacă este necesar: https://www.jetbrains.com/help/pycharm/github.html#register-existing-account
 
-2. imports of packages:
-  in cmd (as administrator) type: 
-    python -m pip install requests
+**Instalarea pachetelor necesare** <br />
+Deschide linia de comandă ca administrator și rulează comanda:
 
-3. you should create a python file named api_connection with a variable named api_key = "your_key". This is done to not expose the api_key.
+python -m pip install requests
 
-How to mine the data:
+**Ascunderea cheii API:** <br />
+Creează un fișier numit api_connection.py și adaugă următoarea linie pentru a stoca cheia API:
 
-**1. add this code in main:**
-i = 0
-while True:
-    dict_source = get_match_details()
-    dict_source_df = pd.DataFrame.from_dict(dict_source)
+api_key = "your_key"
 
-    dict_source_df.to_csv("YOUR_FILE_NAME.csv", sep=",", header=False, index=False, mode="a")
-    time.sleep(120)
-    print(f"RunNumer: {i}")
-    i +=1
+Acest lucru asigură că cheia ta API este protejată și nu este expusă într-un repository public.
 
-**2. add this code in constant and parameters**
+**Cum se mineaza datele:** <br />
+Pas 1: 
+În fișierul main.py pune codul intr-o bucla while True cu sleep de 120 secunde
 
-Comment def_user_input and his call. Add below the following:
+Pas 2:
+Comentează funcția user_inputs() și introduce valori fixe în locul ei:
 
-user_name = "Vonavi"   ADD YOUR USER_NAME HERE
-user_tag_name = "EUNE"  ADD YOUR USER_TAG_NAME HERE
-number_of_matches = 5
+user_name = "Vonavi" <br />
+user_tag_name = "EUNE" <br />
+number_of_matches = 10 <br />
 
-**3. Let the process run.**
+Pas 3: 
+Rulând scriptul modificat, acesta va prelua continuu date despre meciuri, care vor fi salvate în fișierul output.csv.

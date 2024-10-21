@@ -23,30 +23,11 @@ while True:
     i +=1
 
 **2. add this code in constant and parameters**
-# def user_inputs():
-#     user_name = str(input('Enter the user name: ').strip() or "Vonavi")
-#     user_tag_name = str(input('Enter the user tag: ').strip() or "EUNE")
-#     number_of_matches = int(input('Numer of matches to run: ').strip() or '10')
-#
-#     return user_name, user_tag_name, number_of_matches
 
+Comment def_user_input and his call. Add below the following:
 
-
-# user_name, user_tag_name, number_of_matches = user_inputs()
 user_name = "Vonavi"   ADD YOUR USER_NAME HERE
 user_tag_name = "EUNE"  ADD YOUR USER_TAG_NAME HERE
 number_of_matches = 5
-
-unique_combination = user_name + user_tag_name
-last_run = pd.read_csv("last_run.csv", sep=",", index_col=False)
-
-if unique_combination in last_run['unique_combination'].values:
-    match_to_pull_from = last_run.last_pulled.iat[-1] + 1
-    number_of_matches_to_pull = number_of_matches
-    last_pulled = last_run.last_pulled.iat[-1] + number_of_matches
-else:
-    match_to_pull_from = 0
-    number_of_matches_to_pull = number_of_matches
-    last_pulled = number_of_matches
 
 **3. Let the process run.**

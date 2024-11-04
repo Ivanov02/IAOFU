@@ -1,5 +1,6 @@
 from get_user_matches_ids import *
 from get_league_itemts import *
+from get_champions_details import *
 import constants_and_parameters
 import pandas as pd
 
@@ -31,6 +32,7 @@ def get_match_details():
         for participant in participants:
             items = [items_dict.get(participant[f'item{i}'], 'Unknown Item') for i in range(7)]
             items_formatted = ', '.join(items)
+            tags = get_champion_details(participant['championName'])
 
             team_id = participant['teamId']
             has_won = winner_dict[team_id]
@@ -38,12 +40,17 @@ def get_match_details():
             dataframe_dict = dict(
                 summoner_name=f"{participant['summonerName']}",
                 champion_name=f"{participant['championName']}",
+                tags=tags,
                 kills=f"{participant['kills']}",
                 deaths=f"{participant['deaths']}",
                 assists=f"{participant['assists']}",
                 lane=f"{participant.get('teamPosition', 'Unknown Lane')}",
                 team_color=f"{team_id}",
                 has_won=has_won,
+                goldEarned=participant['goldEarned'],
+                totalDamageDealtToChampions=participant['totalDamageDealtToChampions'],
+                totalMinionsKilled=participant['totalMinionsKilled'],
+                neutralMinionsKilled=participant['neutralMinionsKilled'],
                 items=f"{items_formatted}"
             )
 

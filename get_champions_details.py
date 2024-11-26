@@ -1,6 +1,10 @@
 import constants_and_parameters
 import requests
 def get_champion_details(champion_name):
+    if champion_name == "FiddleSticks":
+        champion_name = "Fiddlesticks"
+    else:
+        champion_name = champion_name
     url = f"{constants_and_parameters.api_url_get_champion_details}/{constants_and_parameters.patch_version_ddragon}/data/en_US/champion/{champion_name}.json"
     response = requests.get(url)
     champion_data = response.json()

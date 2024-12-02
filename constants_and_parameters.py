@@ -8,7 +8,7 @@ api_url_get_matches_ids = "https://europe.api.riotgames.com/lol/match/v5/matches
 api_url_get_match_details = "https://europe.api.riotgames.com/lol/match/v5/matches"
 api_url_get_champion_details = "https://ddragon.leagueoflegends.com/cdn"
 patch_version = "14.20.1"
-patch_version_ddragon = "13.20.1"
+patch_version_ddragon = "14.23.1"
 api_key = api_key
 
 

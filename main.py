@@ -53,19 +53,30 @@ def preprocess_and_train_model(df):
 
 def debug_recommend_items_for_champion(champion_name, tags_input, n_recommendations, model, interaction_matrix, df,
                                        champion_to_id, item_to_id):
-    excluded_items = {"Unknown Item", "Control Ward", "Stealth Ward", "Farsight Alteration", "Zombie Ward"}
+    excluded_items = {"Unknown Item", "Control Ward", "Stealth Ward", "Farsight Alteration", "Zombie Ward", "Watchful Wardstone"}
     boots_items = {
         "Berserker's Greaves", "Boots of Swiftness", "Ionian Boots of Lucidity",
         "Mercury's Treads", "Plated Steelcaps", "Sorcerer's Shoes", "Symbiotic Soles",
         "Boots", "Slightly Magical Boots"
     }
+    incomplete_items = {"Amplifying Tome", "B. F. Sword", "Blasting Wand", "Cloak of Agility", "Cloth Armor",
+    "Dagger", "Faerie Charm", "Glowing Mote", "Long Sword", "Needlessly Large Rod",
+    "Null-Magic Mantle", "Pickaxe", "Rejuvenation Bead", "Ruby Crystal", "Sapphire Crystal",
+    "Aether Wisp", "Bami's Cinder", "Bandleglass Mirror", "Blighting Jewel", "Bramble Vest",
+    "Catalyst of Aeons", "Caulfield's Warhammer", "Chain Vest", "Crystalline Bracer",
+    "Executioner's Calling", "Fated Ashes", "Fiendish Codex", "Forbidden Idol", "Giant's Belt",
+    "Glacial Buckler", "Haunting Guise", "Hearthbound Axe", "Hexdrinker", "Hextech Alternator",
+    "Kindlegem", "Last Whisper", "Lost Chapter", "Negatron Cloak", "Noonquiver",
+    "Oblivion Orb", "Phage", "Quicksilver Sash", "Rectrix", "Recurve Bow", "Runic Compass",
+    "Scout's Slingshot", "Seeker's Armguard", "Serrated Dirk", "Shattered Armguard", "Sheen",
+    "Spectre's Cowl", "Steel Sigil", "The Brutalizer", "Tiamat", "Tunneler", "Vampiric Scepter",
+    "Verdant Barrier", "Warden's Mail", "Watchful Wardstone", "Winged Moonplate", "Zeal"}
 
     if champion_name not in champion_to_id:
         return f"Campionul {champion_name} nu există în dataset."
 
     champion_id = champion_to_id[champion_name]
     print(f"Champion ID for {champion_name}: {champion_id}")
-    champion_interactions = interaction_matrix[champion_id].toarray()
 
     try:
         recommended = model.recommend(champion_id, interaction_matrix[champion_id], N=n_recommendations * 2)
@@ -97,6 +108,8 @@ def debug_recommend_items_for_champion(champion_name, tags_input, n_recommendati
     final_items = []
     boots_included = False
     for item in filtered_items:
+        if item in incomplete_items:
+            continue  # Exclude incomplete items
         if item in boots_items:
             if not boots_included:
                 final_items.append(item)
@@ -110,8 +123,8 @@ def debug_recommend_items_for_champion(champion_name, tags_input, n_recommendati
 
 
 model, interaction_matrix, champion_to_id, item_to_id = preprocess_and_train_model(df)
-champ_to_recommand = "Nami"
-tags = "Support, Mage"
+champ_to_recommand = "LeeSin"
+tags = "Fighter, Assassin"
 
 recommended_debug = debug_recommend_items_for_champion(
     champion_name=champ_to_recommand,

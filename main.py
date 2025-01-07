@@ -59,7 +59,8 @@ def debug_recommend_items_for_champion(champion_name, n_recommendations, model, 
         "Oblivion Orb", "Phage", "Quicksilver Sash", "Rectrix", "Recurve Bow", "Runic Compass",
         "Scout's Slingshot", "Seeker's Armguard", "Serrated Dirk", "Shattered Armguard", "Sheen",
         "Spectre's Cowl", "Steel Sigil", "The Brutalizer", "Tiamat", "Tunneler", "Vampiric Scepter",
-        "Verdant Barrier", "Warden's Mail", "Watchful Wardstone", "Winged Moonplate", "Zeal", "Doran's Blade", "Boots", "Doran's Shield"
+        "Verdant Barrier", "Warden's Mail", "Watchful Wardstone", "Winged Moonplate", "Zeal", "Doran's Blade", "Boots",
+        "Doran's Shield", "Slightly Magical Footwear"
     }
     excluded_items.update(incomplete_items)
 
@@ -78,7 +79,7 @@ def debug_recommend_items_for_champion(champion_name, n_recommendations, model, 
     user_interactions = interaction_matrix[champion_id]
 
     # Obține recomandările folosind modelul
-    recommended = model.recommend(champion_id, user_interactions, N=n_recommendations * 2)
+    recommended = model.recommend(champion_id, user_interactions, N=n_recommendations * 10)
     recommended_with_scores = [
         (list(item_to_id.keys())[item_id], score)
         for item_id, score in zip(recommended[0], recommended[1])

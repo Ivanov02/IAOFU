@@ -42,8 +42,7 @@ def preprocess_and_train_model(df):
     return model, interaction_matrix, champion_to_id, item_to_id
 
 
-def debug_recommend_items_for_champion(champion_name, tags_input, n_recommendations, model, interaction_matrix, df,
-                                       champion_to_id, item_to_id):
+def debug_recommend_items_for_champion(champion_name, n_recommendations, model, interaction_matrix, champion_to_id, item_to_id):
     # Lista de iteme excluse
     excluded_items = {
         "Unknown Item", "Control Ward", "Stealth Ward", "Farsight Alteration", "Zombie Ward", "Watchful Wardstone"
@@ -60,7 +59,7 @@ def debug_recommend_items_for_champion(champion_name, tags_input, n_recommendati
         "Oblivion Orb", "Phage", "Quicksilver Sash", "Rectrix", "Recurve Bow", "Runic Compass",
         "Scout's Slingshot", "Seeker's Armguard", "Serrated Dirk", "Shattered Armguard", "Sheen",
         "Spectre's Cowl", "Steel Sigil", "The Brutalizer", "Tiamat", "Tunneler", "Vampiric Scepter",
-        "Verdant Barrier", "Warden's Mail", "Watchful Wardstone", "Winged Moonplate", "Zeal", "Doran's Blade", "Boots"
+        "Verdant Barrier", "Warden's Mail", "Watchful Wardstone", "Winged Moonplate", "Zeal", "Doran's Blade", "Boots", "Doran's Shield"
     }
     excluded_items.update(incomplete_items)
 
@@ -106,22 +105,4 @@ def debug_recommend_items_for_champion(champion_name, tags_input, n_recommendati
     # Fixăm lista finală în ordinea deterministă
     final_items = sorted(final_items)
 
-    return final_items
-
-
-
-model, interaction_matrix, champion_to_id, item_to_id = preprocess_and_train_model(df)
-champ_to_recommand = "LeeSin"
-tags = "Fighter, Assassin"
-
-recommended_debug = debug_recommend_items_for_champion(
-    champion_name=champ_to_recommand,
-    tags_input=tags,
-    n_recommendations=6,
-    model=model,
-    interaction_matrix=interaction_matrix,
-    df=df,
-    champion_to_id=champion_to_id,
-    item_to_id=item_to_id
-)
-print(f"Recommended items for {champ_to_recommand}:", recommended_debug)
+    return sorted(final_items)

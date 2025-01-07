@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>League of Legends Selector</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <script>
+        async function fetchItems() {
+            const champion = document.getElementById("champion-select").value;
+
+            try {
+                const response = await fetch("/get_items", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ champion })
+                });
+
+                if (!response.ok) {
+                    console.error("Error from server:", response.statusText);
+                    return;
+                }
+
+                const data = await response.json();
+
+                // Actualizează textbox-urile cu item-uri
+                for (let i = 0; i < 6; i++) {
+                    document.getElementById(`item${i + 1}`).value = data.items[i];
+                }
+
+                // Actualizează textbox-ul cu tag-uri
+                document.getElementById("tags").value = data.tags;
+            } catch (error) {
+                console.error("Fetch failed:", error);
+            }
+        }
+
+        async function updateTags() {
+            const champion = document.getElementById("champion-select").value;
+
+            try {
+                const response = await fetch("/get_items", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ champion })
+                });
+
+                const data = await response.json();
+                document.getElementById("tags").value = data.tags;
+            } catch (error) {
+                console.error("Failed to update tags:", error);
+            }
+        }
+
+        window.onload = function() {
+            // Populează tag-urile pentru campionul implicit
+            const champion = document.getElementById("champion-select").value;
+
+            fetch("/get_items", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ champion })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("tags").value = data.tags;
+            })
+            .catch(error => console.error("Failed to load initial tags:", error));
+        };
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>League of Legends Selector</h1>
+        <label for="champion-select">Choose a Champion:</label>
+        <select id="champion-select" onchange="updateTags()">
+            {% for champion in champions %}
+                <option value="{{ champion }}">{{ champion }}</option>
+            {% endfor %}
+        </select>
+        <button onclick="fetchItems()">Get Items</button>
+
+        <div class="tags">
+            <h2>Tags:</h2>
+            <input type="text" id="tags" readonly>
+        </div>
+
+        <div class="items">
+            <h2>Items:</h2>
+            {% for i in range(1, 7) %}
+                <input type="text" id="item{{ i }}" readonly>
+            {% endfor %}
+        </div>
+    </div>
+
+<script>
+    async function fetchItems() {
+        const champion = document.getElementById("champion-select").value;
+
+        try {
+            const response = await fetch("/get_items", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ champion })
+            });
+
+            if (!response.ok) {
+                console.error("Error from server:", response.statusText);
+                return;
+            }
+
+            const data = await response.json();
+
+            // Actualizează textbox-urile cu item-uri
+            for (let i = 0; i < 6; i++) {
+                document.getElementById(`item${i + 1}`).value = data.items[i];
+            }
+
+            // Actualizează textbox-ul cu tag-uri
+            document.getElementById("tags").value = data.tags;
+        } catch (error) {
+            console.error("Fetch failed:", error);
+        }
+    }
+
+    async function updateTags() {
+        const champion = document.getElementById("champion-select").value;
+
+        try {
+            // Resetează itemele pentru campionul anterior
+            for (let i = 0; i < 6; i++) {
+                document.getElementById(`item${i + 1}`).value = "";
+            }
+
+            // Actualizează tag-urile imediat ce campionul este selectat
+            const response = await fetch("/get_items", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ champion })
+            });
+
+            const data = await response.json();
+            document.getElementById("tags").value = data.tags;
+        } catch (error) {
+            console.error("Failed to update tags:", error);
+        }
+    }
+
+    window.onload = function() {
+        // Populează tag-urile pentru campionul implicit
+        const champion = document.getElementById("champion-select").value;
+
+        fetch("/get_items", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ champion })
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById("tags").value = data.tags;
+        })
+        .catch(error => console.error("Failed to load initial tags:", error));
+    };
+</script>
+
+</body>
+</html>

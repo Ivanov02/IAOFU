@@ -1,0 +1,501 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}LoL Item Recommender{% endblock %}
+
+{% block content %}
+<div class="recommender-container">
+    {% csrf_token %}
+
+    <!-- Header Card -->
+    <div class="card header-card">
+        <h1 class="title">League of Legends Item Recommender</h1>
+        <p class="subtitle">Select a champion to get optimal item recommendations</p>
+    </div>
+
+    <!-- Selection Card -->
+    <div class="card selection-card">
+        <div class="champion-select-container">
+            <label for="champion-select" class="form-label">Choose your champion:</label>
+            <select id="champion-select" class="form-input champion-select">
+                <option value="">Select a champion...</option>
+                {% for champion in champions %}
+                    <option value="{{ champion }}">{{ champion }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <button id="recommend-button" class="btn btn-primary recommend-button" disabled>
+            Get Recommendations
+        </button>
+    </div>
+
+    <!-- Results Card -->
+    <div id="recommendations-card" class="card recommendations-card" style="display: none;">
+        <div class="recommendations-content">
+            <div class="champion-info">
+                <h2 id="champion-name" class="champion-title"></h2>
+                <img id="champion-image" class="champion-image" src="" alt="" style="display: none;">
+            </div>
+
+            <h3 class="recommendations-subtitle">Recommended Items</h3>
+
+            <div id="loading-container" class="loading-container" style="display: none;">
+                <div class="loading-spinner"></div>
+                <p>Analyzing optimal builds...</p>
+            </div>
+
+            <div id="items-grid" class="items-grid"></div>
+        </div>
+        <div class="bottom-banner">
+            <img src="{% static 'images/league-banner.jpg' %}" alt="League of Legends" class="banner-image">
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Container */
+    .recommender-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 2rem;
+    }
+
+    /* Header Card */
+    .header-card {
+        text-align: center;
+        background: linear-gradient(135deg, #1a365d 0%, #2c5282 100%);
+        color: white;
+        padding: 3rem 2rem;
+        border-radius: var(--border-radius);
+        margin-bottom: 2rem;
+    }
+
+    .title {
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+        font-weight: bold;
+        color: white;
+    }
+
+    .subtitle {
+        font-size: 1.1rem;
+        opacity: 0.9;
+        color: white;
+        margin: 0;
+    }
+
+    /* Selection Card */
+    .selection-card {
+        display: flex;
+        gap: 1.5rem;
+        align-items: flex-end;
+        background: white;
+        padding: 2rem;
+        border-radius: var(--border-radius);
+        margin-bottom: 2rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .champion-select-container {
+        flex: 1;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: #4a5568;
+        font-weight: 500;
+    }
+
+    .champion-select {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #e2e8f0;
+        border-radius: var(--border-radius);
+        background: white;
+        font-size: 1rem;
+    }
+
+    .champion-select:focus {
+        border-color: #3182ce;
+        box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
+        outline: none;
+    }
+
+    .recommend-button {
+        padding: 0.75rem 1.5rem;
+        background: #2b6cb0;
+        color: white;
+        border: none;
+        border-radius: var(--border-radius);
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+        min-width: 200px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .recommend-button:hover:not(:disabled) {
+        background: #2c5282;
+        transform: translateY(-1px);
+    }
+
+    .recommend-button:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+
+    /* Results Card */
+    .recommendations-card {
+        background: white;
+        padding: 0.5rem;
+        padding-left: 2rem;
+        padding-right: 2rem;
+        border-radius: var(--border-radius);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .champion-info {
+        text-align: center;
+        margin-bottom: 1rem;
+    }
+
+    .champion-title {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #2d3748;
+        margin-bottom: 1rem;
+    }
+
+    .champion-image {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        margin: 0 auto;
+        border: 3px solid #1a365d;
+        background: #edf2f7;
+        object-fit: cover;
+    }
+
+    .recommendations-subtitle {
+        font-size: 1.5rem;
+        color: #2d3748;
+        margin-bottom: 2rem;
+        text-align: center;
+        font-weight: 600;
+    }
+
+    /* Items Grid */
+    .items-grid {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 1.5rem;
+        margin: 0 auto;
+    }
+
+    .item-card {
+    position: relative;  /* Establish stacking context */
+    background: #f8fafc;
+    padding: 1rem;
+    border-radius: var(--border-radius);
+    text-align: center;
+    transition: all 0.2s;
+    cursor: pointer;
+    border: 1px solid #e2e8f0;
+    z-index: 1;  /* Base z-index */
+}
+
+    .item-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        z-index: 100;  /* Higher z-index when hovered */
+    }
+
+    .item-image {
+        width: 64px;
+        height: 64px;
+        margin: 0 auto 1rem;
+        border-radius: 8px;
+        overflow: hidden;
+        background-color: #1a1a1a;
+        border: 2px solid #394052;
+    }
+
+    .item-icon {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+
+    .item-name {
+        font-size: 0.9rem;
+        color: #2d3748;
+        font-weight: 500;
+        margin: 0;
+    }
+
+    /* Loading States */
+    .loading-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+        padding: 2rem;
+    }
+
+    .loading-spinner {
+        width: 40px;
+        height: 40px;
+        border: 3px solid #e2e8f0;
+        border-top: 3px solid #2b6cb0;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    .loading-spinner-mini {
+        width: 20px;
+        height: 20px;
+        border: 2px solid #ffffff;
+        border-top: 2px solid transparent;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    /* Tooltip Styles */
+    .item-details {
+        position: absolute;
+        z-index: 9999;  /* Very high z-index */
+        background: rgba(1, 10, 19, 0.95);
+        color: #fff;
+        border: 1px solid #394052;
+        border-radius: var(--border-radius);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+        padding: 1rem;
+        width: 300px;
+        margin-top: 1rem;
+        text-align: left;
+        transform: translateX(-50%);
+        left: 50%;
+        font-size: 0.9rem;
+        line-height: 1.5;
+    }
+
+    .item-details-description {
+        color: #a4b0b6;
+    }
+
+    .item-details-stats {
+        margin: 1rem 0;
+        padding: 0.5rem 0;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .stat-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.9rem;
+        color: #88a0a7;
+        margin-bottom: 0.25rem;
+    }
+
+    .item-gold {
+        margin-top: 0.5rem;
+        color: #c4b998;
+        font-size: 0.9rem;
+    }
+
+    .item-details * {
+        z-index: 9999;  /* Ensure all tooltip content stays on top */
+    }
+
+    .bottom-banner {
+        margin-top: 4rem;
+        width: 100%;
+        height: 500px;
+        overflow: hidden;
+        border-radius: var(--border-radius);
+        background-color: #1a1a1a;  /* Background color for the side bars */
+        display: flex;
+        justify-content: center;  /* Center the image horizontally */
+    }
+
+    .banner-image {
+        width: 100%;   /* Auto width to maintain aspect ratio */
+        object-fit: contain;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 1200px) {
+        .items-grid {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+
+    @media (max-width: 768px) {
+        .items-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .selection-card {
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .recommend-button {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    // DOM Elements
+    const championSelect = document.getElementById('champion-select');
+    const recommendButton = document.getElementById('recommend-button');
+    const recommendationsCard = document.getElementById('recommendations-card');
+    const loadingContainer = document.getElementById('loading-container');
+    const itemsGrid = document.getElementById('items-grid');
+
+    // Format functions for item display
+    function formatStat(stat) {
+        return stat
+            .replace(/([A-Z])/g, ' $1')
+            .toLowerCase()
+            .replace(/^./, str => str.toUpperCase());
+    }
+
+    function formatValue(value) {
+        if (typeof value === 'number') {
+            if (value % 1 !== 0) {
+                return (value * 100).toFixed(0) + '%';
+            }
+            return value.toString();
+        }
+        return value;
+    }
+
+    function formatDescription(desc) {
+        if (!desc) return '';
+        return desc
+            .replace(/<mainText>(.*?)<\/mainText>/gs, '$1')
+            .replace(/<stats>(.*?)<\/stats>/gs, '<div style="color: #58a6bb; margin-bottom: 0.5rem;">$1</div>')
+            .replace(/<attention>(.*?)<\/attention>/g, '<span style="color: #fff7d0;">$1</span>')
+            .replace(/<passive>(.*?)<\/passive>/g, '<span style="color: #e2c974; font-weight: 500;">$1</span>')
+            .replace(/<active>(.*?)<\/active>/g, '<span style="color: #e2c974; font-weight: 500;">$1</span>')
+            .replace(/<magicDamage>(.*?)<\/magicDamage>/g, '<span style="color: #97b6f5;">$1</span>')
+            .replace(/<physicalDamage>(.*?)<\/physicalDamage>/g, '<span style="color: #f26f63;">$1</span>')
+            .replace(/<healing>(.*?)<\/healing>/g, '<span style="color: #5cd65c;">$1</span>')
+            .replace(/<buffedStat>(.*?)<\/buffedStat>/g, '<span style="color: #5cd65c;">$1</span>')
+            .replace(/<OnHit>(.*?)<\/OnHit>/g, '<span style="color: #e6b655;">$1</span>')
+            .replace(/<status>(.*?)<\/status>/g, '<span style="color: #d67e45;">$1</span>')
+            .replace(/<keyword>(.*?)<\/keyword>/g, '<span style="color: #e6b655;">$1</span>')
+            .replace(/<scaleMR>(.*?)<\/scaleMR>/g, '<span style="color: #97b6f5;">$1</span>')
+            .replace(/<rules>(.*?)<\/rules>/g, '<div style="color: #89a0b5; font-style: italic;">$1</div>')
+            .replace(/<keywordMajor>(.*?)<\/keywordMajor>/g, '<span style="color: #e6b655;">$1</span>')
+            .replace(/<speed>(.*?)<\/speed>/g, '<span style="color: #e6b655;">$1</span>')
+            .replace(/<li>/g, '<br>• ')
+            .replace(/<\/li>/g, '')
+            .replace(/<br>/g, '<br>');
+    }
+
+    // Event Listeners
+    championSelect.addEventListener('change', () => {
+        recommendButton.disabled = !championSelect.value;
+    });
+
+    recommendButton.addEventListener('click', getRecommendations);
+
+    async function getRecommendations() {
+        const champion = championSelect.value;
+        if (!champion) return;
+
+        // Show loading state
+        recommendButton.disabled = true;
+        recommendationsCard.style.display = 'block';
+        loadingContainer.style.display = 'flex';
+        itemsGrid.innerHTML = '';
+
+        try {
+            const response = await fetch('{% url "get_recommendations" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: `champion=${encodeURIComponent(champion)}`
+            });
+
+            const data = await response.json();
+            console.log('Received data:', data);  // Debug log
+
+            if (data.success) {
+                // Update champion name
+                document.getElementById('champion-name').textContent = champion;
+                const championImage = document.getElementById('champion-image');
+                championImage.src = data.champion_image;
+                championImage.style.display = 'block';  // Show the image
+                displayItems(data.items);
+            } else {
+                throw new Error(data.error || 'Failed to get recommendations');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            itemsGrid.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+        } finally {
+            recommendButton.disabled = false;
+            loadingContainer.style.display = 'none';
+        }
+    }
+
+    function displayItems(items) {
+        itemsGrid.innerHTML = items.map((item, index) => `
+            <div class="item-card" onmouseenter="showTooltip(event, ${index})" onmouseleave="hideTooltip(event)">
+                <div class="item-image">
+                    <img src="${item.image_url}" alt="${item.name}" class="item-icon">
+                </div>
+                <p class="item-name">${item.name}</p>
+                <div class="item-details" style="display: none;">
+                    <div class="item-details-description">${formatDescription(item.description)}</div>
+                    ${item.stats && Object.keys(item.stats).length ? `
+                        <div class="item-details-stats">
+                            ${Object.entries(item.stats).map(([stat, value]) => `
+                                <div class="stat-row">
+                                    <span>${formatStat(stat)}</span>
+                                    <span>${formatValue(value)}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+                    <div class="item-gold">
+                        <span>Cost: ${item.gold} gold</span>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function showTooltip(event, index) {
+        const card = event.currentTarget;
+        const tooltip = card.querySelector('.item-details');
+        tooltip.style.display = 'block';
+    }
+
+    function hideTooltip(event) {
+        const card = event.currentTarget;
+        const tooltip = card.querySelector('.item-details');
+        tooltip.style.display = 'none';
+    }
+
+</script>
+{% endblock %}
